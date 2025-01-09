@@ -1,6 +1,11 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from database import Base
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime, timedelta
+
+Base = declarative_base()
 
 class PaymentMethod(Base):
     __tablename__ = "payment_methods"
@@ -28,6 +33,24 @@ class Transaction(Base):
     currency = Column(String, default='USD')
     status = Column(String)
     date = Column(DateTime, default=func.now())
+
+class OAuthToken(Base):
+    __tablename__ = 'oauth_tokens'
+
+    id = Column(Integer, primary_key=True)
+    access_token = Column(String)
+    refresh_token = Column(String)
+    expires_in = Column(Integer)
+    x_refresh_token_expires_in = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    @property
+    def access_token_expiry(self):
+        return self.created_at + timedelta(seconds=self.expires_in)
+
+    @property
+    def refresh_token_expiry(self):
+        return self.created_at + timedelta(seconds=self.x_refresh_token_expires_in)
 
 # models.py
 # from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, Boolean

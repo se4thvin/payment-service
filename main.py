@@ -1,13 +1,15 @@
 # main.py
-#from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Depends, HTTPException, status
 from . import models, schemas, crud, quickbooks_client
 from .dependencies import get_db, get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from datetime import datetime, timedelta
-
+from fastapi import FastAPI
+from scheduler import scheduler, start_scheduler
+import asyncio
 app = FastAPI(title="Payment Service")
 
 # CORS settings
