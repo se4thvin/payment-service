@@ -94,8 +94,8 @@ async def create_subscription_endpoint(
 @app.post("/payments/authorize", response_model=schemas.TransactionOut)
 async def authorize_payment(
     amount: float,
-    currency: str = "USD",
-    token: str,  # Token from QuickBooks
+    token: str,
+    currency: str = "USD",  # Token from QuickBooks
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
