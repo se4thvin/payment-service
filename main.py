@@ -1,5 +1,6 @@
 # main.py
-from fastapi import FastAPI, Depends, HTTPException, status
+#from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI
 from . import models, schemas, crud, quickbooks_client
 from .dependencies import get_db, get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,19 +8,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from datetime import datetime, timedelta
 
-app = FastAPI()
+app = FastAPI(title="Payment Service")
 
 # CORS settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",       # For local development
-        "https://localhost:3000",      # If using HTTPS locally
-        "http://coursebite.ai",         # Your production frontend URL
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "http://coursebite.ai",
         "https://www.coursebite.ai",
         "https://coursebite.ai",
-        "http://www.coursebite.ai"
-        # Include other origins as needed
+        "http://www.coursebite.ai",
+        "*"
     ],
     allow_credentials=True,
     allow_methods=["*"],

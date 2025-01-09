@@ -1,0 +1,4 @@
+We'll extend your existing database models to include:
+PaymentMethod: Stores tokens for payment methods.
+Subscription: Manages user subscriptions and their statuses.
+Transaction: Records payment transactions and histories.
