@@ -149,3 +149,31 @@ async def get_transactions(
     return transactions
 
 # Additional endpoints for subscription management, refunds, etc., can be added similarly
+
+# To test the API, you can use tools like Postman or Insomnia
+
+# For example, to create a payment method:
+# POST /payment_methods
+# {
+#     "token": "quickbooks_card_id"
+# }
+
+# For example, to create a subscription:
+# POST /subscriptions
+# {
+#     "tier": "bronze",
+#     "payment_method_id": 1
+# }
+
+# For example, to process a one-time payment:
+# POST /payments/authorize
+# {
+#     "amount": 10.99,
+#     "token": "quickbooks_card_id"
+# }
+
+# For example, to capture a payment:
+# POST /payments/capture/{transaction_id}
+
+# For example, to view payment history:
+# GET /transactions
