@@ -26,11 +26,11 @@ async def create_subscription(
 
     # Determine amount based on tier
     amount = 0
-    if subscription.tier == 'basic':
+    if subscription.tier == 'bronze':
         amount = 1000
-    elif subscription.tier == 'standard':
+    elif subscription.tier == 'silver':
         amount = 2000
-    elif subscription.tier == 'premium':
+    elif subscription.tier == 'gold':
         amount = 3000
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")

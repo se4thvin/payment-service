@@ -10,6 +10,10 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI
 from scheduler import scheduler, start_scheduler
 import asyncio
+from routers.payment_methods import router as payment_methods_router
+from routers.subscriptions import router as subscriptions_router
+from routers.transactions import router as transactions_router
+
 app = FastAPI(title="Payment Service")
 
 # CORS settings
@@ -31,6 +35,11 @@ app.add_middleware(
 
 # Initialize QuickBooks client
 qb_client = quickbooks_client.QuickBooksClient()
+
+# Include routers
+app.include_router(payment_methods_router)
+app.include_router(subscriptions_router)
+app.include_router(transactions_router)
 
 @app.on_event("startup")
 async def on_startup():
