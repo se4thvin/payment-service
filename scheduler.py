@@ -1,5 +1,3 @@
-# scheduler.py
-
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
 from datetime import datetime, timedelta
@@ -25,7 +23,7 @@ def schedule_subscription_payment(subscription: models.Subscription):
         process_subscription_payment,
         trigger=DateTrigger(run_date=subscription.next_billing_date),
         args=[subscription.user_id],
-        id=f"subscription_{subscription.user_id}",
+        id=f"subscription_{subscription.id}",
         replace_existing=True
     )
 
@@ -57,9 +55,11 @@ async def process_subscription_payment(user_id: int):
         # Process payment
         try:
             charge_response = payments.charge_payment(
-                amount=str(amount / 100),
+                amount=amount / 100.0,  # Convert cents to dollars
                 currency='USD',
-                token=payment_method.token
+                token=payment_method.token,
+                user_id=user_id,
+                db=db
             )
             # Record transaction
             await crud.create_transaction(db, user_id, amount, 'succeeded')

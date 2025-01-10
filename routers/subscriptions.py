@@ -1,12 +1,8 @@
-# routers/subscriptions.py
-
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from dependencies import get_current_user
 from database import get_db
 import schemas, crud
-import models
-import payments
 from scheduler import schedule_subscription_payment
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
@@ -14,13 +10,12 @@ router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
 @router.post("/", response_model=schemas.SubscriptionOut)
 async def create_subscription(
     subscription: schemas.SubscriptionCreate,
-    payment_method_id: int = Body(),
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     # Validate payment method
     payment_methods = await crud.get_payment_methods(db, user["user_id"])
-    payment_method = next((pm for pm in payment_methods if pm.id == payment_method_id), None)
+    payment_method = next((pm for pm in payment_methods if pm.id == subscription.payment_method_id), None)
     if not payment_method:
         raise HTTPException(status_code=404, detail="Payment method not found")
 
@@ -35,18 +30,19 @@ async def create_subscription(
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")
 
-    # Process payment
+    # Process initial payment
     try:
-        charge_response = payments.charge_payment(
-            amount=str(amount / 100),
+        charge_response = charge_payment(
+            amount=amount / 100.0,  # Convert cents to dollars
             currency='USD',
-            token=payment_method.token
+            token=payment_method.token,
+            user_id=user["user_id"],  # Placeholder for customer mapping
+            db=db
         )
+        # Record transaction
+        await crud.create_transaction(db, user["user_id"], amount, 'succeeded')
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Payment processing failed")
-
-    # Record transaction
-    await crud.create_transaction(db, user["user_id"], amount, 'succeeded')
+        raise HTTPException(status_code=400, detail=f"Payment processing failed: {e}")
 
     # Create subscription
     new_subscription = await crud.create_subscription(db, user["user_id"], subscription.tier)
