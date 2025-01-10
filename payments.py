@@ -1,44 +1,30 @@
-from quickbooks import QuickBooks
-from intuitlib.client import AuthClient
+# payments.py
+
+from quickbooks.objects.payment import Payment
+from quickbooks.objects.base import Ref
+from quickbooks_client import get_qb_client
+from models import PaymentMethod
 from sqlalchemy.orm import Session
-from auth_utils import auth_client, get_valid_access_token
-from database import get_db
-import os
+from dependencies import get_db
+from fastapi import Depends
 
-# Load environment variables
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = os.getenv('REDIRECT_URI')
-REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
-COMPANY_ID = os.getenv('COMPANY_ID')
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'sandbox')  # 'sandbox' or 'production'
-
-
-def get_qb_client(db: Session = Depends(get_db)):
-    access_token = get_valid_access_token(db)
-    # Update the AuthClient with the new access token
-    auth_client.access_token = access_token
+def charge_payment(amount: float, currency: str, token: str, user_id: int, db: Session = Depends(get_db)):
     # Initialize QuickBooks client
-    qb_client = QuickBooks(
-        auth_client=auth_client,
-        company_id=auth_client.realm_id,
-    )
-    return qb_client
+    qb_client = get_qb_client(db)
 
-# Initialize AuthClient
-auth_client = AuthClient(
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
-    environment=ENVIRONMENT,
-    redirect_uri=REDIRECT_URI,
-)
+    # Create a Payment object
+    payment = Payment()
+    
+    # Set the customer reference (You'll need to map your user_id to a QuickBooks Customer)
+    customer_ref = Ref(value="1")  # Placeholder; implement customer mapping ?
 
-# Initialize QuickBooks client
-qb_client = QuickBooks(
-    auth_client=auth_client,
-    refresh_token=REFRESH_TOKEN,
-    company_id=COMPANY_ID,
-)
+    payment.CustomerRef = customer_ref
+    payment.TotalAmt = amount
+    payment.PrivateNote = "Subscription payment"
 
-# Refresh the token if needed
-refresh_token = qb_client.refresh_token  # Store the new refresh token
+    # Set the payment method
+    payment.PaymentMethodRef = Ref(value=token)
+
+    # Save the payment
+    payment.save(qb=qb_client)
+    return payment
