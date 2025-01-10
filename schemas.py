@@ -1,6 +1,6 @@
 # schemas.py
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
@@ -11,10 +11,13 @@ class PaymentMethodBase(BaseModel):
     is_default: bool
 
 class PaymentMethodCreate(BaseModel):
-    token: str
+    token: str  # Tokenized card data
 
 class PaymentMethodOut(PaymentMethodBase):
     id: int
+
+    class Config:
+        orm_mode = True
 
 class SubscriptionBase(BaseModel):
     tier: str
@@ -23,79 +26,23 @@ class SubscriptionBase(BaseModel):
 
 class SubscriptionCreate(BaseModel):
     tier: str
+    payment_method_id: int
 
 class SubscriptionOut(SubscriptionBase):
     id: int
+
+    class Config:
+        orm_mode = True
 
 class TransactionBase(BaseModel):
     amount: int
     currency: str
     status: str
     date: datetime
+    transaction_id: Optional[str]
 
 class TransactionOut(TransactionBase):
     id: int
 
-
-
-
-
-# schemas.py
-# from pydantic import BaseModel, EmailStr, constr
-# from typing import Optional, List
-# from datetime import datetime
-
-# class PaymentMethodBase(BaseModel):
-#     card_last4: str
-#     card_brand: str
-#     is_default: bool = False
-
-# class PaymentMethodCreate(BaseModel):
-#     # No raw card data; handled via QuickBooks tokenization
-#     quickbooks_card_id: str
-
-# class PaymentMethodOut(PaymentMethodBase):
-#     id: int
-#     created_at: datetime
-
-#     class Config:
-#         orm_mode = True
-
-# class SubscriptionBase(BaseModel):
-#     tier: str
-
-# class SubscriptionCreate(SubscriptionBase):
-#     payment_method_id: int
-
-# class SubscriptionOut(SubscriptionBase):
-#     id: int
-#     status: str
-#     start_date: datetime
-#     next_billing_date: datetime
-#     payment_method: PaymentMethodOut
-
-#     class Config:
-#         orm_mode = True
-
-# class TransactionOut(BaseModel):
-#     id: int
-#     amount: float
-#     currency: str
-#     status: str
-#     transaction_id: str
-#     created_at: datetime
-
-#     class Config:
-#         orm_mode = True
-
-# class UserOut(BaseModel):
-#     id: int
-#     email: EmailStr
-#     name: str
-
-#     class Config:
-#         orm_mode = True
-
-# class Token(BaseModel):
-#     access_token: str
-#     token_type: str
+    class Config:
+        orm_mode = True
